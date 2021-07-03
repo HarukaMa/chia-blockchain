@@ -268,14 +268,17 @@ def load_plots(
             return stat_info.st_size, new_provers
         return 0, new_provers
 
-    def reduce_function(x: Tuple[int, Dict], y: Tuple[int, Dict]) -> Tuple[int, Dict]:
-        (total_size1, new_provers1) = x
-        (total_size2, new_provers2) = y
-        return total_size1 + total_size2, {**new_provers1, **new_provers2}
+    # def reduce_function(x: Tuple[int, Dict], y: Tuple[int, Dict]) -> Tuple[int, Dict]:
+    #     (total_size1, new_provers1) = x
+    #     (total_size2, new_provers2) = y
+    #     return total_size1 + total_size2, {**new_provers1, **new_provers2}
 
     with ThreadPoolExecutor() as executor:
-        initial_value: Tuple[int, Dict[Path, PlotInfo]] = (0, {})
-        total_size, new_provers = reduce(reduce_function, executor.map(process_file, all_filenames), initial_value)
+        sizes, provers = zip(*executor.map(process_file, all_filenames))
+        total_size = sum(sizes)
+        new_provers = {k:v for p in provers for k, v in p.items()}
+        # initial_value: Tuple[int, Dict[Path, PlotInfo]] = (0, {})
+        # total_size, new_provers = reduce(reduce_function, executor.map(process_file, all_filenames), initial_value)
 
     log.info(
         f"Loaded a total of {len(new_provers)} plots of size {total_size / (1024 ** 4)} TiB, in"
