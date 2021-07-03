@@ -172,19 +172,13 @@ def load_plots(
                 # Try once every 20 minutes to open the file
                 return 0, new_provers
             if filename in provers:
-                try:
-                    stat_info = filename.stat()
-                except Exception as e:
-                    log.error(f"Failed to open file {filename}. {e}")
-                    return 0, new_provers
-                if stat_info.st_mtime == provers[filename].time_modified:
-                    with plot_ids_lock:
-                        if provers[filename].prover.get_id() in plot_ids:
-                            log.warning(f"Have multiple copies of the plot {filename}, not adding it.")
-                            return 0, new_provers
-                        plot_ids.add(provers[filename].prover.get_id())
-                    new_provers[filename] = provers[filename]
-                    return stat_info.st_size, new_provers
+                with plot_ids_lock:
+                    if provers[filename].prover.get_id() in plot_ids:
+                        log.warning(f"Have multiple copies of the plot {filename}, not adding it.")
+                        return 0, new_provers
+                    plot_ids.add(provers[filename].prover.get_id())
+                new_provers[filename] = provers[filename]
+                return provers[filename].file_size, new_provers
             try:
                 prover = DiskProver(str(filename))
 
