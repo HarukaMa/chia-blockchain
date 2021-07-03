@@ -79,6 +79,12 @@ class Harvester:
         self.log.info(f"peer disconnected {connection.get_peer_info()}")
         self._state_changed("close_connection")
 
+    def get_stat(self) -> Tuple[int, int]:
+        size = 0
+        for _, plot_info in self.provers.items():
+            size += plot_info.file_size
+        return size, len(self.provers)
+
     def get_plots(self) -> Tuple[List[Dict], List[str], List[str]]:
         self.log.debug(f"get_plots prover items: {len(self.provers)}")
         response_plots: List[Dict] = []
